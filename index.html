@@ -1,0 +1,1074 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Edouard — Developer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Fira+Code:wght@300;400;500&family=Crimson+Pro:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --void: #040d06;
+    --deep: #0a1a0e;
+    --bark: #0f2314;
+    --moss: #1a3a20;
+    --lichen: #2a5a30;
+    --fern: #3d7a45;
+    --sage: #5a9960;
+    --mist: #8abf8f;
+    --glow: #a8ffb0;
+    --biolume: #7dffcc;
+    --spore: #c8ffe0;
+    --fog: rgba(168, 255, 176, 0.06);
+    --fog-dense: rgba(168, 255, 176, 0.12);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background-color: var(--void);
+    color: var(--mist);
+    font-family: 'Crimson Pro', Georgia, serif;
+    font-size: 18px;
+    line-height: 1.7;
+    overflow-x: hidden;
+    min-height: 100vh;
+  }
+
+  /* ── Noise texture overlay ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 1000;
+    opacity: 0.6;
+  }
+
+  /* ── Ambient forest glow ── */
+  body::after {
+    content: '';
+    position: fixed;
+    top: -20%;
+    left: -10%;
+    width: 70%;
+    height: 70%;
+    background: radial-gradient(ellipse at center, rgba(125, 255, 204, 0.04) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+    animation: drift 20s ease-in-out infinite alternate;
+  }
+
+  @keyframes drift {
+    0% { transform: translate(0, 0) scale(1); opacity: 0.5; }
+    100% { transform: translate(8%, 5%) scale(1.1); opacity: 0.8; }
+  }
+
+  /* ── SVG Forest Decorations ── */
+  .forest-bg {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+  }
+
+  .forest-bg svg {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  /* ── Layout ── */
+  .container {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 0 2rem;
+    position: relative;
+    z-index: 10;
+  }
+
+  section {
+    padding: 6rem 0;
+  }
+
+  /* ── Typography ── */
+  .display {
+    font-family: 'Cinzel Decorative', serif;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+  }
+
+  .mono {
+    font-family: 'Fira Code', monospace;
+  }
+
+  /* ── Animated entrance ── */
+  .reveal {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+                transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    padding: 1.2rem 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: linear-gradient(to bottom, rgba(4, 13, 6, 0.9), transparent);
+    backdrop-filter: blur(2px);
+  }
+
+  nav .sigil {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: 1rem;
+    color: var(--biolume);
+    letter-spacing: 0.15em;
+    text-shadow: 0 0 20px rgba(125, 255, 204, 0.5);
+  }
+
+  nav ul {
+    list-style: none;
+    display: flex;
+    gap: 2.5rem;
+  }
+
+  nav a {
+    font-family: 'Fira Code', monospace;
+    font-size: 0.78rem;
+    color: var(--sage);
+    text-decoration: none;
+    letter-spacing: 0.1em;
+    transition: color 0.3s, text-shadow 0.3s;
+    position: relative;
+  }
+
+  nav a::before { content: '> '; opacity: 0; transition: opacity 0.3s; }
+  nav a:hover { color: var(--glow); text-shadow: 0 0 12px rgba(168, 255, 176, 0.6); }
+  nav a:hover::before { opacity: 1; }
+
+  /* ── HERO ── */
+  #hero {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    padding-top: 5rem;
+    position: relative;
+  }
+
+  .hero-inner {
+    position: relative;
+  }
+
+  .hero-prefix {
+    font-family: 'Fira Code', monospace;
+    font-size: 0.85rem;
+    color: var(--biolume);
+    letter-spacing: 0.2em;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .hero-prefix::before {
+    content: '';
+    display: inline-block;
+    width: 32px;
+    height: 1px;
+    background: var(--biolume);
+    box-shadow: 0 0 8px var(--biolume);
+  }
+
+  h1.name {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: clamp(3rem, 8vw, 6rem);
+    font-weight: 700;
+    color: var(--spore);
+    line-height: 1.05;
+    letter-spacing: -0.01em;
+    text-shadow:
+      0 0 60px rgba(168, 255, 176, 0.2),
+      0 0 120px rgba(125, 255, 204, 0.1);
+    margin-bottom: 1.5rem;
+  }
+
+  .tagline {
+    font-size: 1.3rem;
+    font-weight: 300;
+    font-style: italic;
+    color: var(--mist);
+    max-width: 520px;
+    line-height: 1.6;
+    margin-bottom: 2.5rem;
+    opacity: 0.85;
+  }
+
+  .hero-cta {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .btn {
+    font-family: 'Fira Code', monospace;
+    font-size: 0.82rem;
+    letter-spacing: 0.1em;
+    padding: 0.75rem 1.8rem;
+    border-radius: 2px;
+    text-decoration: none;
+    transition: all 0.3s;
+    cursor: pointer;
+    border: none;
+  }
+
+  .btn-primary {
+    background: transparent;
+    border: 1px solid var(--biolume);
+    color: var(--biolume);
+    box-shadow: 0 0 20px rgba(125, 255, 204, 0.1), inset 0 0 20px rgba(125, 255, 204, 0.03);
+  }
+
+  .btn-primary:hover {
+    background: rgba(125, 255, 204, 0.08);
+    box-shadow: 0 0 30px rgba(125, 255, 204, 0.25), inset 0 0 30px rgba(125, 255, 204, 0.06);
+    transform: translateY(-1px);
+  }
+
+  .btn-ghost {
+    background: transparent;
+    border: 1px solid var(--lichen);
+    color: var(--sage);
+  }
+
+  .btn-ghost:hover {
+    border-color: var(--sage);
+    color: var(--mist);
+    transform: translateY(-1px);
+  }
+
+  /* ── Scroll indicator ── */
+  .scroll-hint {
+    position: absolute;
+    bottom: 3rem;
+    left: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-family: 'Fira Code', monospace;
+    font-size: 0.72rem;
+    color: var(--fern);
+    letter-spacing: 0.15em;
+    animation: float 3s ease-in-out infinite;
+  }
+
+  .scroll-hint .arrow {
+    width: 20px;
+    height: 20px;
+    border-right: 1px solid var(--fern);
+    border-bottom: 1px solid var(--fern);
+    transform: rotate(45deg);
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(6px); }
+  }
+
+  /* ── Section headers ── */
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    margin-bottom: 3.5rem;
+  }
+
+  .section-num {
+    font-family: 'Fira Code', monospace;
+    font-size: 0.8rem;
+    color: var(--biolume);
+    opacity: 0.7;
+  }
+
+  .section-title {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: 1.6rem;
+    font-weight: 400;
+    color: var(--spore);
+    letter-spacing: 0.05em;
+  }
+
+  .section-line {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(to right, var(--lichen), transparent);
+  }
+
+  /* ── SKILLS ── */
+  #skills {
+    position: relative;
+  }
+
+  .skills-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+  }
+
+  @media (max-width: 600px) {
+    .skills-grid { grid-template-columns: 1fr; }
+  }
+
+  .skill-group {
+    background: linear-gradient(135deg, rgba(26, 58, 32, 0.3), rgba(10, 26, 14, 0.5));
+    border: 1px solid rgba(58, 122, 69, 0.2);
+    border-radius: 4px;
+    padding: 1.8rem;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.3s, box-shadow 0.3s;
+  }
+
+  .skill-group::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(to right, transparent, var(--biolume), transparent);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .skill-group:hover {
+    border-color: rgba(125, 255, 204, 0.2);
+    box-shadow: 0 0 30px rgba(125, 255, 204, 0.05);
+  }
+
+  .skill-group:hover::before { opacity: 0.6; }
+
+  .skill-group-label {
+    font-family: 'Fira Code', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.2em;
+    color: var(--biolume);
+    margin-bottom: 1.2rem;
+    opacity: 0.8;
+    text-transform: uppercase;
+  }
+
+  .skill-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+
+  .skill-item {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    font-family: 'Fira Code', monospace;
+    font-size: 0.9rem;
+    color: var(--mist);
+  }
+
+  .skill-item .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--sage);
+    box-shadow: 0 0 8px var(--sage);
+    flex-shrink: 0;
+  }
+
+  .skill-group.learning .dot {
+    background: var(--biolume);
+    box-shadow: 0 0 10px var(--biolume);
+    animation: pulse-dot 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 1; box-shadow: 0 0 8px var(--biolume); }
+    50% { opacity: 0.5; box-shadow: 0 0 3px var(--biolume); }
+  }
+
+  .skill-badge {
+    font-size: 0.65rem;
+    padding: 0.15rem 0.5rem;
+    border-radius: 2px;
+    background: rgba(125, 255, 204, 0.08);
+    border: 1px solid rgba(125, 255, 204, 0.2);
+    color: var(--biolume);
+    letter-spacing: 0.1em;
+    margin-left: auto;
+  }
+
+  /* ── PROJECT ── */
+  #project {
+    position: relative;
+  }
+
+  .project-card {
+    background: linear-gradient(135deg, rgba(15, 35, 20, 0.8), rgba(10, 26, 14, 0.9));
+    border: 1px solid rgba(58, 122, 69, 0.25);
+    border-radius: 6px;
+    padding: 2.5rem;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.4s, box-shadow 0.4s;
+  }
+
+  .project-card::after {
+    content: '';
+    position: absolute;
+    bottom: -40%;
+    right: -10%;
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(ellipse, rgba(125, 255, 204, 0.04), transparent 70%);
+    pointer-events: none;
+  }
+
+  .project-card:hover {
+    border-color: rgba(125, 255, 204, 0.3);
+    box-shadow: 0 8px 60px rgba(125, 255, 204, 0.06), 0 0 0 1px rgba(125, 255, 204, 0.05);
+  }
+
+  .project-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 1.2rem;
+    gap: 1rem;
+  }
+
+  .project-name {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--spore);
+    letter-spacing: 0.05em;
+    text-shadow: 0 0 40px rgba(168, 255, 176, 0.2);
+  }
+
+  .project-status {
+    font-family: 'Fira Code', monospace;
+    font-size: 0.72rem;
+    padding: 0.3rem 0.8rem;
+    border-radius: 2px;
+    background: rgba(125, 255, 204, 0.06);
+    border: 1px solid rgba(125, 255, 204, 0.2);
+    color: var(--biolume);
+    letter-spacing: 0.15em;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .project-status::before {
+    content: '';
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--biolume);
+    animation: pulse-dot 1.5s ease-in-out infinite;
+  }
+
+  .project-desc {
+    font-size: 1.1rem;
+    font-weight: 300;
+    color: var(--mist);
+    opacity: 0.85;
+    margin-bottom: 1.8rem;
+    max-width: 580px;
+    line-height: 1.7;
+  }
+
+  .project-tech {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin-bottom: 2rem;
+  }
+
+  .tech-tag {
+    font-family: 'Fira Code', monospace;
+    font-size: 0.75rem;
+    padding: 0.3rem 0.8rem;
+    border-radius: 2px;
+    background: rgba(42, 90, 48, 0.3);
+    border: 1px solid rgba(93, 153, 96, 0.3);
+    color: var(--sage);
+    letter-spacing: 0.08em;
+    transition: border-color 0.3s, color 0.3s;
+  }
+
+  .tech-tag:hover {
+    border-color: var(--biolume);
+    color: var(--glow);
+  }
+
+  .project-features {
+    list-style: none;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+  }
+
+  @media (max-width: 560px) {
+    .project-features { grid-template-columns: 1fr; }
+  }
+
+  .project-features li {
+    font-size: 0.95rem;
+    color: var(--sage);
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+
+  .project-features li::before {
+    content: '⌥';
+    color: var(--biolume);
+    font-size: 0.75rem;
+    opacity: 0.7;
+  }
+
+  /* ── GITHUB ── */
+  #contact {
+    padding-bottom: 8rem;
+  }
+
+  .github-card {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    padding: 2rem 2.5rem;
+    background: linear-gradient(135deg, rgba(26, 58, 32, 0.2), rgba(10, 26, 14, 0.4));
+    border: 1px solid rgba(58, 122, 69, 0.2);
+    border-radius: 4px;
+    text-decoration: none;
+    transition: all 0.4s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .github-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(125, 255, 204, 0.03), transparent);
+    opacity: 0;
+    transition: opacity 0.4s;
+  }
+
+  .github-card:hover {
+    border-color: rgba(125, 255, 204, 0.3);
+    box-shadow: 0 0 50px rgba(125, 255, 204, 0.08);
+    transform: translateY(-2px);
+  }
+
+  .github-card:hover::before { opacity: 1; }
+
+  .github-icon {
+    flex-shrink: 0;
+    width: 52px;
+    height: 52px;
+    fill: var(--sage);
+    transition: fill 0.3s;
+  }
+
+  .github-card:hover .github-icon { fill: var(--biolume); }
+
+  .github-text h3 {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: 1.1rem;
+    color: var(--spore);
+    margin-bottom: 0.3rem;
+  }
+
+  .github-text p {
+    font-size: 0.95rem;
+    color: var(--sage);
+    opacity: 0.8;
+  }
+
+  .github-arrow {
+    margin-left: auto;
+    color: var(--fern);
+    font-size: 1.5rem;
+    transition: transform 0.3s, color 0.3s;
+  }
+
+  .github-card:hover .github-arrow {
+    transform: translateX(4px);
+    color: var(--biolume);
+  }
+
+  /* ── Footer ── */
+  footer {
+    border-top: 1px solid rgba(42, 90, 48, 0.2);
+    padding: 2rem;
+    text-align: center;
+    font-family: 'Fira Code', monospace;
+    font-size: 0.72rem;
+    color: var(--fern);
+    letter-spacing: 0.1em;
+    position: relative;
+    z-index: 10;
+  }
+
+  footer span { color: var(--biolume); }
+
+  /* ── Divider ── */
+  .vine-divider {
+    width: 100%;
+    overflow: hidden;
+    height: 24px;
+    margin: 1rem 0;
+    opacity: 0.3;
+    display: flex;
+    align-items: center;
+  }
+
+  /* ── Floating particles ── */
+  .particles {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+    overflow: hidden;
+  }
+
+  .particle {
+    position: absolute;
+    border-radius: 50%;
+    background: var(--biolume);
+    opacity: 0;
+    animation: rise linear infinite;
+  }
+
+  @keyframes rise {
+    0% { transform: translateY(0) scale(1); opacity: 0; }
+    10% { opacity: 0.4; }
+    90% { opacity: 0.2; }
+    100% { transform: translateY(-100vh) scale(0.3); opacity: 0; }
+  }
+
+  /* ── Cursor glow ── */
+  .cursor-glow {
+    position: fixed;
+    width: 300px;
+    height: 300px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(125, 255, 204, 0.04) 0%, transparent 70%);
+    pointer-events: none;
+    transform: translate(-50%, -50%);
+    z-index: 2;
+    transition: opacity 0.3s;
+  }
+
+  /* ── Typewriter cursor ── */
+  .cursor-blink {
+    display: inline-block;
+    width: 2px;
+    height: 1.1em;
+    background: var(--biolume);
+    margin-left: 2px;
+    vertical-align: text-bottom;
+    animation: blink 1s step-end infinite;
+  }
+
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 768px) {
+    nav ul { gap: 1.2rem; }
+    section { padding: 4rem 0; }
+    .github-card { flex-wrap: wrap; }
+    .project-header { flex-direction: column; }
+  }
+
+  @media (max-width: 500px) {
+    nav ul { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Cursor glow -->
+<div class="cursor-glow" id="cursorGlow"></div>
+
+<!-- Floating spore particles -->
+<div class="particles" id="particles"></div>
+
+<!-- Forest silhouette background -->
+<div class="forest-bg" aria-hidden="true">
+  <svg viewBox="0 0 1440 900" preserveAspectRatio="xMidYMax slice" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="treeGrad" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#0f2314" stop-opacity="0.9"/>
+        <stop offset="100%" stop-color="#040d06" stop-opacity="0.95"/>
+      </linearGradient>
+      <filter id="blur-sm">
+        <feGaussianBlur stdDeviation="2"/>
+      </filter>
+      <filter id="blur-lg">
+        <feGaussianBlur stdDeviation="8"/>
+      </filter>
+    </defs>
+    <!-- Far trees (blurred, ghostly) -->
+    <g filter="url(#blur-lg)" opacity="0.4">
+      <rect x="20" y="580" width="35" height="320" fill="#0f2314"/>
+      <polygon points="37,380 10,600 64,600" fill="#0f2314"/>
+      <polygon points="37,450 5,590 69,590" fill="#0f2314"/>
+      <rect x="180" y="540" width="28" height="360" fill="#0f2314"/>
+      <polygon points="194,330 165,570 223,570" fill="#0f2314"/>
+      <rect x="380" y="560" width="32" height="340" fill="#112818"/>
+      <polygon points="396,360 368,580 424,580" fill="#112818"/>
+      <rect x="1240" y="545" width="30" height="355" fill="#0f2314"/>
+      <polygon points="1255,340 1225,575 1285,575" fill="#0f2314"/>
+      <rect x="1380" y="570" width="40" height="330" fill="#0f2314"/>
+      <polygon points="1400,370 1365,590 1435,590" fill="#0f2314"/>
+    </g>
+    <!-- Mid trees -->
+    <g filter="url(#blur-sm)" opacity="0.7">
+      <rect x="0" y="600" width="50" height="300" fill="#1a3a20"/>
+      <polygon points="25,350 -5,620 55,620" fill="#1a3a20"/>
+      <polygon points="25,430 -10,610 60,610" fill="#152e1a"/>
+      <rect x="100" y="610" width="40" height="290" fill="#1a3a20"/>
+      <polygon points="120,380 88,630 152,630" fill="#1a3a20"/>
+      <rect x="300" y="590" width="45" height="310" fill="#1a3a20"/>
+      <polygon points="322,370 292,610 352,610" fill="#1a3a20"/>
+      <polygon points="322,460 285,600 359,600" fill="#152e1a"/>
+      <rect x="1100" y="600" width="42" height="300" fill="#1a3a20"/>
+      <polygon points="1121,370 1090,622 1152,622" fill="#1a3a20"/>
+      <rect x="1300" y="580" width="48" height="320" fill="#1a3a20"/>
+      <polygon points="1324,350 1290,600 1358,600" fill="#1a3a20"/>
+      <rect x="1420" y="595" width="50" height="305" fill="#1a3a20"/>
+      <polygon points="1445,360 1408,615 1482,615" fill="#1a3a20"/>
+    </g>
+    <!-- Near trees (sharp) -->
+    <g opacity="0.9">
+      <rect x="-10" y="640" width="60" height="280" fill="#0a1a0e"/>
+      <polygon points="20,340 -20,665 60,665" fill="#0a1a0e"/>
+      <polygon points="20,440 -15,650 55,650" fill="#061208"/>
+      <rect x="1380" y="640" width="65" height="280" fill="#0a1a0e"/>
+      <polygon points="1412,340 1372,665 1452,665" fill="#0a1a0e"/>
+      <!-- Ground fog layer -->
+      <rect x="0" y="820" width="1440" height="80" fill="url(#treeGrad)" opacity="0.6"/>
+    </g>
+    <!-- Hanging roots/vines left -->
+    <g opacity="0.2" stroke="#2a5a30" stroke-width="1" fill="none">
+      <path d="M 80 0 Q 70 200 90 400 Q 95 500 80 600"/>
+      <path d="M 85 0 Q 100 150 85 350 Q 75 480 95 580"/>
+      <path d="M 1360 0 Q 1370 180 1350 380 Q 1345 490 1365 590"/>
+      <path d="M 1355 0 Q 1340 200 1360 420 Q 1375 510 1355 620"/>
+    </g>
+    <!-- Bioluminescent ground mushrooms -->
+    <g opacity="0.5">
+      <ellipse cx="140" cy="870" rx="12" ry="5" fill="#7dffcc" filter="url(#blur-sm)"/>
+      <ellipse cx="140" cy="870" rx="5" ry="15" fill="#7dffcc" filter="url(#blur-sm)"/>
+      <ellipse cx="860" cy="880" rx="10" ry="4" fill="#a8ffb0" filter="url(#blur-sm)"/>
+      <ellipse cx="860" cy="880" rx="4" ry="12" fill="#a8ffb0" filter="url(#blur-sm)"/>
+      <ellipse cx="1300" cy="872" rx="8" ry="3" fill="#7dffcc" filter="url(#blur-sm)"/>
+      <ellipse cx="1300" cy="872" rx="3" ry="10" fill="#7dffcc" filter="url(#blur-sm)"/>
+    </g>
+    <!-- Mist / fog layers -->
+    <ellipse cx="200" cy="850" rx="400" ry="80" fill="#0f2314" opacity="0.5" filter="url(#blur-lg)"/>
+    <ellipse cx="1200" cy="860" rx="350" ry="70" fill="#0f2314" opacity="0.4" filter="url(#blur-lg)"/>
+    <ellipse cx="720" cy="900" rx="600" ry="100" fill="#0a1a0e" opacity="0.7" filter="url(#blur-lg)"/>
+  </svg>
+</div>
+
+<!-- Navigation -->
+<nav>
+  <div class="sigil">E</div>
+  <ul>
+    <li><a href="#skills">skills</a></li>
+    <li><a href="#project">project</a></li>
+    <li><a href="#contact">github</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="container">
+    <div class="hero-inner">
+      <div class="hero-prefix reveal">
+        <span>terminal.open( )</span>
+      </div>
+      <h1 class="name reveal" style="transition-delay: 0.1s">
+        Edouard
+      </h1>
+      <p class="tagline reveal" style="transition-delay: 0.2s" id="tagline">
+        Building tools in the deep — one compiled thought at a time.
+      </p>
+      <div class="hero-cta reveal" style="transition-delay: 0.3s">
+        <a href="#project" class="btn btn-primary">current work</a>
+        <a href="#contact" class="btn btn-ghost">find me</a>
+      </div>
+      <div class="scroll-hint reveal" style="transition-delay: 0.5s">
+        <span class="arrow"></span>
+        <span class="mono" style="font-size:0.7rem; letter-spacing:0.15em;">scroll to explore</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SKILLS -->
+<section id="skills">
+  <div class="container">
+    <div class="section-header reveal">
+      <span class="section-num mono">01</span>
+      <h2 class="section-title">Arsenal</h2>
+      <div class="section-line"></div>
+    </div>
+    <div class="skills-grid">
+      <div class="skill-group reveal" style="transition-delay: 0.1s">
+        <div class="skill-group-label">// mastered</div>
+        <ul class="skill-list">
+          <li class="skill-item">
+            <span class="dot"></span>
+            <span>Python</span>
+            <span class="skill-badge">primary</span>
+          </li>
+          <li class="skill-item">
+            <span class="dot"></span>
+            <span>C++</span>
+          </li>
+          <li class="skill-item">
+            <span class="dot"></span>
+            <span>Rust</span>
+          </li>
+        </ul>
+      </div>
+      <div class="skill-group learning reveal" style="transition-delay: 0.2s">
+        <div class="skill-group-label">// acquiring</div>
+        <ul class="skill-list">
+          <li class="skill-item">
+            <span class="dot"></span>
+            <span>JavaScript</span>
+            <span class="skill-badge">in progress</span>
+          </li>
+          <li class="skill-item">
+            <span class="dot"></span>
+            <span>SQL</span>
+            <span class="skill-badge">in progress</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROJECT -->
+<section id="project">
+  <div class="container">
+    <div class="section-header reveal">
+      <span class="section-num mono">02</span>
+      <h2 class="section-title">Featured Work</h2>
+      <div class="section-line"></div>
+    </div>
+    <div class="project-card reveal" style="transition-delay: 0.1s">
+      <div class="project-header">
+        <div class="project-name">Charon</div>
+        <div class="project-status">active</div>
+      </div>
+      <p class="project-desc">
+        A localized search engine — built to index, rank, and retrieve
+        without sending your queries into the void. Fast, private, yours.
+      </p>
+      <div class="project-tech">
+        <span class="tech-tag">Rust</span>
+        <span class="tech-tag">Python</span>
+        <span class="tech-tag">C++</span>
+        <span class="tech-tag">search</span>
+        <span class="tech-tag">local-first</span>
+      </div>
+      <ul class="project-features">
+        <li>Local indexing engine</li>
+        <li>Privacy-first design</li>
+        <li>Custom ranking logic</li>
+        <li>Fast retrieval</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- GITHUB / CONTACT -->
+<section id="contact">
+  <div class="container">
+    <div class="section-header reveal">
+      <span class="section-num mono">03</span>
+      <h2 class="section-title">Find Me</h2>
+      <div class="section-line"></div>
+    </div>
+    <a href="https://github.com/edouard8766" target="_blank" rel="noopener" class="github-card reveal">
+      <svg class="github-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/>
+      </svg>
+      <div class="github-text">
+        <h3>edouard8766</h3>
+        <p>github.com/edouard8766 — source of record</p>
+      </div>
+      <span class="github-arrow">→</span>
+    </a>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer>
+  <div class="container">
+    <p>
+      built in the dark &nbsp;·&nbsp;
+      <span>edouard8766.github.io</span>
+      &nbsp;·&nbsp; no trackers, no telemetry
+    </p>
+  </div>
+</footer>
+
+<script>
+  // ── Reveal on scroll ──────────────────────────────
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('visible');
+        observer.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.12 });
+
+  reveals.forEach((el, i) => {
+    // Hero items fire immediately on load
+    if (el.closest('#hero')) {
+      setTimeout(() => el.classList.add('visible'), i * 120);
+    } else {
+      observer.observe(el);
+    }
+  });
+
+  // ── Cursor glow ───────────────────────────────────
+  const glow = document.getElementById('cursorGlow');
+  let mx = window.innerWidth / 2, my = window.innerHeight / 2;
+  let gx = mx, gy = my;
+
+  window.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
+
+  (function animateGlow() {
+    gx += (mx - gx) * 0.08;
+    gy += (my - gy) * 0.08;
+    glow.style.left = gx + 'px';
+    glow.style.top = gy + 'px';
+    requestAnimationFrame(animateGlow);
+  })();
+
+  // ── Floating particles ────────────────────────────
+  const particleContainer = document.getElementById('particles');
+  const colors = ['rgba(125,255,204,0.6)', 'rgba(168,255,176,0.5)', 'rgba(90,153,96,0.4)'];
+
+  function spawnParticle() {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    const size = Math.random() * 3 + 1;
+    const x = Math.random() * window.innerWidth;
+    const duration = Math.random() * 12 + 8;
+    const delay = Math.random() * 6;
+
+    p.style.cssText = `
+      width: ${size}px;
+      height: ${size}px;
+      left: ${x}px;
+      bottom: ${Math.random() * 200}px;
+      background: ${colors[Math.floor(Math.random() * colors.length)]};
+      animation-duration: ${duration}s;
+      animation-delay: ${delay}s;
+      box-shadow: 0 0 ${size * 3}px currentColor;
+    `;
+    particleContainer.appendChild(p);
+    setTimeout(() => p.remove(), (duration + delay) * 1000);
+  }
+
+  // Spawn initial batch
+  for (let i = 0; i < 18; i++) spawnParticle();
+  setInterval(spawnParticle, 1800);
+
+  // ── Typewriter tagline ────────────────────────────
+  const taglines = [
+    "Building tools in the deep — one compiled thought at a time.",
+    "Indexing the unknown. Searching the silence.",
+    "Low-level roots. High-level reach.",
+  ];
+  let tIdx = 0, cIdx = 0, deleting = false;
+  const tagEl = document.getElementById('tagline');
+  const baseText = taglines[0];
+
+  // Start typewriter after entrance
+  setTimeout(() => {
+    tagEl.textContent = '';
+    const cursor = document.createElement('span');
+    cursor.className = 'cursor-blink';
+    tagEl.appendChild(cursor);
+
+    function type() {
+      const current = taglines[tIdx];
+      if (!deleting) {
+        tagEl.insertBefore(document.createTextNode(current[cIdx]), cursor);
+        cIdx++;
+        if (cIdx >= current.length) {
+          deleting = true;
+          setTimeout(type, 2800);
+          return;
+        }
+      } else {
+        // Remove last text node character
+        const nodes = tagEl.childNodes;
+        for (let i = nodes.length - 1; i >= 0; i--) {
+          if (nodes[i].nodeType === Node.TEXT_NODE && nodes[i].textContent.length > 0) {
+            nodes[i].textContent = nodes[i].textContent.slice(0, -1);
+            break;
+          }
+        }
+        cIdx--;
+        if (cIdx <= 0) {
+          deleting = false;
+          tIdx = (tIdx + 1) % taglines.length;
+          cIdx = 0;
+          setTimeout(type, 400);
+          return;
+        }
+      }
+      setTimeout(type, deleting ? 30 : 55);
+    }
+    setTimeout(type, 600);
+  }, 1200);
+
+  // ── Subtle parallax on hero ───────────────────────
+  const heroName = document.querySelector('h1.name');
+  window.addEventListener('scroll', () => {
+    const y = window.scrollY;
+    if (heroName) heroName.style.transform = `translateY(${y * 0.15}px)`;
+  }, { passive: true });
+</script>
+</body>
+</html>
